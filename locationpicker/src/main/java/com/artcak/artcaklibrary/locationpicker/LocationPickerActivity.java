@@ -12,6 +12,7 @@ import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -23,7 +24,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import com.artcak.artcaklibrary.R;
-import com.artcak.artcaklibrary.abstractClass.GeneralActivity;
 import com.artcak.artcaklibrary.databinding.ActivityLocationPickerBinding;
 import com.artcak.artcaklibrary.locationpicker.geocoder.AddressBuilder;
 import com.artcak.artcaklibrary.locationpicker.geocoder.AndroidGeocoderDataSource;
@@ -33,7 +33,7 @@ import com.artcak.artcaklibrary.locationpicker.geocoder.GeocoderViewInterface;
 import com.artcak.artcaklibrary.locationpicker.geocoder.GoogleGeocoderDataSource;
 import com.artcak.artcaklibrary.locationpicker.geocoder.GooglePlacesDataSource;
 import com.artcak.artcaklibrary.locationpicker.geocoder.NetworkClient;
-import com.artcak.artcaklibrary.tools.PermissionUtils;
+import com.artcak.artcaklibrary.locationpicker.tools.PermissionUtils;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -57,7 +57,7 @@ import pl.charmas.android.reactivelocation2.ReactiveLocationProvider;
 
 import static com.google.android.gms.maps.GoogleMap.MAP_TYPE_NORMAL;
 
-public class LocationPickerActivity extends GeneralActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
+public class LocationPickerActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener, GoogleMap.OnMapLongClickListener,
         GeocoderViewInterface, GoogleMap.OnMapClickListener{
 
