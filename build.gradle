@@ -31,7 +31,7 @@ ext {
     minSdkVersion = 15
     targetSdkVersion = 27
     compileSdkVersion = 27
-    gmsVersion = '12.0.1'
+    gmsVersion = '15.0.1'
     firebaseVersion = '12.0.1'
 
     // App dependencies
