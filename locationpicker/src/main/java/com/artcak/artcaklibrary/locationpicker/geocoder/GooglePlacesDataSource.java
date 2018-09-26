@@ -1,6 +1,7 @@
 package com.artcak.artcaklibrary.locationpicker.geocoder;
 import android.location.Address;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.google.android.gms.common.data.DataBufferUtils;
 import com.google.android.gms.location.places.AutocompletePrediction;
@@ -30,6 +31,7 @@ public class GooglePlacesDataSource {
     }
 
     public Observable<List<Address>> getFromLocationName(String query, LatLngBounds latLngBounds) {
+        Log.i("debug","GooglePlacesDataSource getFromLocationName query : "+query);
         return Observable.defer(() -> {
             Task<AutocompletePredictionBufferResponse> results =
                     geoDataClient.getAutocompletePredictions(query, latLngBounds, null);
@@ -50,6 +52,7 @@ public class GooglePlacesDataSource {
 
     @NonNull
     private List<Address> getAddressListFromPrediction(List<AutocompletePrediction> predictionList) {
+        Log.i("debug","GooglePlacesDataSource getAddressListFromPrediction predictionList : "+predictionList.size());
         List<Address> addressList = new ArrayList<>();
         for (AutocompletePrediction prediction : predictionList) {
             Task<PlaceBufferResponse> placeBufferResponseTask = geoDataClient.getPlaceById(prediction.getPlaceId());
@@ -61,15 +64,17 @@ public class GooglePlacesDataSource {
             Place place = placeBufferResponse.get(0);
             addressList.add(mapPlaceToAddress(place));
         }
+        Log.i("debug","GooglePlacesDataSource getAddressListFromPrediction addressList : "+addressList.size());
         return addressList;
     }
 
     @NonNull
     private Address mapPlaceToAddress(Place place) {
+        Log.i("debug","GooglePlacesDataSource mapPlaceToAddress place : "+place.getName().toString());
         Address address = new Address(Locale.getDefault());
         address.setLatitude(place.getLatLng().latitude);
         address.setLongitude(place.getLatLng().longitude);
-        String addressName = place.getName().toString() + " - " + place.getAddress().toString();
+        String addressName = place.getName().toString() + " | " + place.getAddress().toString();
         address.setAddressLine(0, addressName);
         address.setFeatureName(addressName);
         return address;

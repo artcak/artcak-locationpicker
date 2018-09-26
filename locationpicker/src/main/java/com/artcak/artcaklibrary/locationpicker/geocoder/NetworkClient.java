@@ -1,5 +1,7 @@
 package com.artcak.artcaklibrary.locationpicker.geocoder;
 
+import android.util.Log;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,6 +15,7 @@ public class NetworkClient {
     private static final int CONNECT_TIMEOUT = 3000;
 
     public String requestFromLocationName(String request) {
+        Log.i("debug","NetworkClient requestFromLocationName request : "+request);
         String result = null;
         InputStream stream = null;
         HttpsURLConnection connection = null;
@@ -51,6 +54,7 @@ public class NetworkClient {
     }
 
     private String readStream(InputStream stream, int maxLength) throws IOException {
+        Log.i("debug","NetworkClient readStream maxLength : "+maxLength);
         ByteArrayOutputStream result = new ByteArrayOutputStream();
         byte[] buffer = new byte[maxLength];
         int length;

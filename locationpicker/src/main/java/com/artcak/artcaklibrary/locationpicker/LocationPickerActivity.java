@@ -16,6 +16,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -76,6 +77,7 @@ public class LocationPickerActivity extends AppCompatActivity implements OnMapRe
     public static final String ENABLE_GOOGLE_PLACES = "enable_google_places";
     public static final String POIS_LIST = "pois_list";
     public static final String LEKU_POI = "leku_poi";
+    public static final String API_KEY = "api_key";
     private static final String GEOLOC_API_KEY = "geoloc_api_key";
     private static final String LOCATION_KEY = "location_key";
     private static final String LAST_LOCATION_QUERY = "last_location_query";
@@ -90,12 +92,15 @@ public class LocationPickerActivity extends AppCompatActivity implements OnMapRe
     private static final int MIN_CHARACTERS = 2;
     private static final int DEBOUNCE_TIME = 400;
 
+    public static final String TAG = "LOCATION_PICKER";
+
     private GoogleMap map;
     private GoogleApiClient googleApiClient;
     private Location currentLocation;
     private GeocoderPresenter geocoderPresenter;
     private GoogleGeocoderDataSource apiInteractor;
 
+    private String apiKey;
     private ArrayAdapter<String> adapter;
     private List<String> locationNameList = new ArrayList<>();
     private final List<Address> locationList = new ArrayList<>();
@@ -111,6 +116,8 @@ public class LocationPickerActivity extends AppCompatActivity implements OnMapRe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this,R.layout.activity_location_picker);
+        custom(savedInstanceState);
+//        updateValuesFromBundle(savedInstanceState);
     }
 
     private void custom(Bundle savedInstanceState){
@@ -124,12 +131,18 @@ public class LocationPickerActivity extends AppCompatActivity implements OnMapRe
         setUpFloatingButtons();
         buildGoogleApiClient();
         track(TrackEvents.didLoadLocationPicker);
+        closeKeyboard();
     }
 
     private void setUpMainVariables() {
-        GooglePlacesDataSource placesDataSource = new GooglePlacesDataSource(Places.getGeoDataClient(this, null));
+        Bundle transitionBundle = getIntent().getExtras();
+        if (transitionBundle!=null && transitionBundle.keySet().contains(API_KEY)){
+            apiKey = transitionBundle.getString(API_KEY);
+        }
+        GooglePlacesDataSource placesDataSource = new GooglePlacesDataSource(Places.getGeoDataClient(this));
         Geocoder geocoder = new Geocoder(this, Locale.getDefault());
         apiInteractor = new GoogleGeocoderDataSource(new NetworkClient(), new AddressBuilder());
+        apiInteractor.setApiKey(apiKey);
 //        GeocoderRepository geocoderRepository = new GeocoderRepository(new AndroidGeocoderDataSource(geocoder), apiInteractor);
         GeocoderRepository geocoderRepository = new GeocoderRepository(apiInteractor,new AndroidGeocoderDataSource(geocoder));
         geocoderPresenter = new GeocoderPresenter(new ReactiveLocationProvider(getApplicationContext()), geocoderRepository, placesDataSource);
@@ -155,11 +168,23 @@ public class LocationPickerActivity extends AppCompatActivity implements OnMapRe
     }
 
     private void setUpToolBar() {
+
         setSupportActionBar(binding.toolbarSearch);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     private void checkLocationPermission() {
@@ -202,6 +227,7 @@ public class LocationPickerActivity extends AppCompatActivity implements OnMapRe
 
             @Override
             public void afterTextChanged(Editable editable) {
+                Log.i(TAG,"afterTextChanged editable : "+editable.toString());
                 retrieveLocationWithDebounceTimeFrom(binding.etSearch.getText().toString());
             }
         };
@@ -214,9 +240,12 @@ public class LocationPickerActivity extends AppCompatActivity implements OnMapRe
     }
 
     private void retrieveLocationFrom(String query) {
+        Log.i("lol","retrieveLocationFrom query : "+query);
         if (searchZone != null && !searchZone.isEmpty()) {
+            Log.i("lol","retrieveLocationFrom searchZone != null && !searchZone.isEmpty()");
             retrieveLocationFromZone(query, searchZone);
         } else {
+            Log.i("lol","retrieveLocationFrom retrieveLocationFromDefaultZone");
             retrieveLocationFromDefaultZone(query);
         }
     }
@@ -249,6 +278,7 @@ public class LocationPickerActivity extends AppCompatActivity implements OnMapRe
     }
 
     private void retrieveDebouncedLocationFromDefaultZone(String query, int debounceTime) {
+        Log.i(TAG,"retrieveDebouncedLocationFromDefaultZone query : "+query+"| debounceTime : "+debounceTime);
         if (CountryLocaleRect.getDefaultLowerLeft() != null) {
             geocoderPresenter.getDebouncedFromLocationName(query, CountryLocaleRect.getDefaultLowerLeft(),
                     CountryLocaleRect.getDefaultUpperRight(), debounceTime);
@@ -308,6 +338,7 @@ public class LocationPickerActivity extends AppCompatActivity implements OnMapRe
     }
 
     private void updateValuesFromBundle(Bundle savedInstanceState) {
+        Log.i(TAG,"updateValuesFromBundle");
         Bundle transitionBundle = getIntent().getExtras();
         if (transitionBundle != null) {
             getTransitionBundleParams(transitionBundle);
@@ -319,6 +350,7 @@ public class LocationPickerActivity extends AppCompatActivity implements OnMapRe
     }
 
     private void getSavedInstanceParams(Bundle savedInstanceState) {
+        Log.i(TAG,"getSavedInstanceParams");
         if (savedInstanceState.containsKey(TRANSITION_BUNDLE)) {
             bundle.putBundle(TRANSITION_BUNDLE, savedInstanceState.getBundle(TRANSITION_BUNDLE));
         } else {
@@ -336,10 +368,14 @@ public class LocationPickerActivity extends AppCompatActivity implements OnMapRe
         }
     }
     private void getTransitionBundleParams(Bundle transitionBundle){
+        Log.i(TAG,"getTransitionBundleParams");
         bundle.putBundle(TRANSITION_BUNDLE, transitionBundle);
         if (transitionBundle.keySet().contains(LATITUDE) && transitionBundle.keySet()
                 .contains(LONGITUDE)) {
             setLocationFromBundle(transitionBundle);
+        }
+        if (transitionBundle.keySet().contains(API_KEY)){
+            apiKey = transitionBundle.getString(API_KEY);
         }
         if (transitionBundle.keySet().contains(SEARCH_ZONE)) {
             searchZone = transitionBundle.getString(SEARCH_ZONE);
@@ -347,6 +383,7 @@ public class LocationPickerActivity extends AppCompatActivity implements OnMapRe
     }
 
     private void setLocationFromBundle(Bundle transitionBundle) {
+        Log.i(TAG,"setLocationFromBundle LATITUDE : "+transitionBundle.getDouble(LATITUDE)+" |LONGITUDE : "+transitionBundle.getDouble(LONGITUDE));
         if (currentLocation == null) {
             currentLocation = new Location("network");
         }
@@ -414,7 +451,9 @@ public class LocationPickerActivity extends AppCompatActivity implements OnMapRe
         closeKeyboard();
     }
     private void setNewMapMarker(LatLng latLng) {
+        Log.i(TAG,"setUpDefaultMapLocation setNewMapMarker latLng : "+latLng);
         if (map != null) {
+            Log.i(TAG,"setUpDefaultMapLocation setNewMapMarker map != null");
             if (currentMarker != null) {
                 currentMarker.remove();
             }
@@ -449,14 +488,19 @@ public class LocationPickerActivity extends AppCompatActivity implements OnMapRe
                     setCurrentPositionLocation();
                 }
             });
+        }else{
+            Log.i(TAG,"setUpDefaultMapLocation setNewMapMarker map == null");
         }
     }
     private void setCurrentPositionLocation() {
         if (currentLocation != null) {
+            Log.i(TAG,"setCurrentPositionLocation != NULL");
             setNewMapMarker(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()));
             geocoderPresenter.getInfoFromLocation(new LatLng(currentLocation.getLatitude(),
                     currentLocation.getLongitude()));
+            closeKeyboard();
         }else{
+            Log.i(TAG,"setCurrentPositionLocation == NULL");
         }
     }
 
@@ -498,6 +542,7 @@ public class LocationPickerActivity extends AppCompatActivity implements OnMapRe
 
     @Override
     public void showLocations(List<Address> addresses) {
+        Log.i("debug","showLocations addresses : "+addresses.size());
         if (addresses != null) {
             fillLocationList(addresses);
             if (addresses.isEmpty()) {
@@ -518,6 +563,7 @@ public class LocationPickerActivity extends AppCompatActivity implements OnMapRe
 
     @Override
     public void showDebouncedLocations(List<Address> addresses) {
+        Log.i("lol","showDebouncedLocations "+addresses.size());
         if (addresses != null) {
             fillLocationList(addresses);
             if (!addresses.isEmpty()) {
@@ -546,7 +592,7 @@ public class LocationPickerActivity extends AppCompatActivity implements OnMapRe
     public void showLoadLocationError() {
         binding.pbLoading.setVisibility(View.GONE);
         changeListResultVisibility(View.GONE);
-        Toast.makeText(this, "Terjadi kesalahan, silahkan coba lagi", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, "Terjadi kesalahan, silahkan coba lagi", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -568,6 +614,7 @@ public class LocationPickerActivity extends AppCompatActivity implements OnMapRe
 
     @Override
     public void showLocationInfo(List<Address> addresses) {
+        Log.i(TAG,"showLocationInfo addresses.size : "+addresses.size());
         if (addresses != null) {
             if (addresses.size() > 0 && addresses.get(0) != null) {
                 selectedAddress = addresses.get(0);
@@ -672,8 +719,10 @@ public class LocationPickerActivity extends AppCompatActivity implements OnMapRe
 
     private void setUpDefaultMapLocation() {
         if (currentLocation != null) {
+            Log.i(TAG,"setUpDefaultMapLocation currentLocation != null");
             setCurrentPositionLocation();
         } else {
+            Log.i(TAG,"setUpDefaultMapLocation currentLocation == null");
             retrieveLocationFrom(Locale.getDefault().getDisplayCountry());
             hasWiderZoom = true;
         }
@@ -689,6 +738,7 @@ public class LocationPickerActivity extends AppCompatActivity implements OnMapRe
     }
 
     private void updateLocationNameList(List<Address> addresses) {
+        Log.i("debug","updateLocationNameList address size : "+addresses.size());
         locationNameList.clear();
         for (Address address : addresses) {
             locationNameList.add(getFullAddressString(address));
@@ -782,6 +832,7 @@ public class LocationPickerActivity extends AppCompatActivity implements OnMapRe
         }
 
         public Intent build(Context context) {
+            Log.i(TAG,"Intent build");
             Intent intent = new Intent(context, LocationPickerActivity.class);
 
             if (locationLatitude != null) {

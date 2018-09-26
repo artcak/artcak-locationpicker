@@ -1,6 +1,7 @@
 package com.artcak.artcaklibrary.locationpicker.geocoder;
 
 import android.location.Address;
+import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -22,16 +23,19 @@ public class GoogleGeocoderDataSource implements GeocoderInteractorDataSource {
     private final AddressBuilder addressBuilder;
 
     public GoogleGeocoderDataSource(NetworkClient networkClient, AddressBuilder addressBuilder) {
+        Log.i("debug","GoogleGeocoderDataSource ");
         this.networkClient = networkClient;
         this.addressBuilder = addressBuilder;
     }
 
     public void setApiKey(String apiKey) {
+        Log.i("debug","GoogleGeocoderDataSource ");
         this.apiKey = apiKey;
     }
 
     @Override
     public Observable<List<Address>> getFromLocationName(String query) {
+        Log.i("debug","GoogleGeocoderDataSource getFromLocationName query A : "+query+"|apiKey : "+apiKey);
         return Observable.create(subscriber -> {
             if (apiKey == null) {
                 subscriber.onComplete();
@@ -42,6 +46,8 @@ public class GoogleGeocoderDataSource implements GeocoderInteractorDataSource {
                         QUERY_REQUEST, query.trim(), apiKey);
                 String result = networkClient.requestFromLocationName(urlRequest);
                 List<Address> addresses = addressBuilder.parseResult(result);
+                Log.i("debugs","GoogleGeocoderDataSource getFromLocationName short QUERY_REQUEST A: "+urlRequest);
+                Log.i("debugs","GoogleGeocoderDataSource getFromLocationName short result: "+result);
                 subscriber.onNext(addresses);
                 subscriber.onComplete();
             } catch (JSONException e) {
@@ -52,6 +58,7 @@ public class GoogleGeocoderDataSource implements GeocoderInteractorDataSource {
 
     @Override
     public Observable<List<Address>> getFromLocationName(String query, LatLng lowerLeft,LatLng upperRight) {
+        Log.i("debug","GoogleGeocoderDataSource getFromLocationName query B : "+query+"|apiKey : "+apiKey);
         return Observable.create(subscriber -> {
             if (apiKey == null) {
                 subscriber.onComplete();
@@ -63,6 +70,8 @@ public class GoogleGeocoderDataSource implements GeocoderInteractorDataSource {
                         lowerLeft.longitude, upperRight.latitude, upperRight.longitude);
                 String result = networkClient.requestFromLocationName(urlRequest);
                 List<Address> addresses = addressBuilder.parseResult(result);
+                Log.i("debugs","GoogleGeocoderDataSource getFromLocationName short QUERY_REQUEST B: "+urlRequest);
+                Log.i("debugs","GoogleGeocoderDataSource getFromLocationName short result: "+result);
                 subscriber.onNext(addresses);
                 subscriber.onComplete();
             } catch (JSONException e) {
@@ -73,6 +82,7 @@ public class GoogleGeocoderDataSource implements GeocoderInteractorDataSource {
 
     @Override
     public Observable<List<Address>> getFromLocation(double latitude, double longitude) {
+        Log.i("debug","GoogleGeocoderDataSource getFromLocation: "+latitude+"|"+longitude);
         return Observable.create(subscriber -> {
             if (apiKey == null) {
                 subscriber.onComplete();
@@ -83,6 +93,8 @@ public class GoogleGeocoderDataSource implements GeocoderInteractorDataSource {
                         QUERY_LAT_LONG, latitude, longitude, apiKey);
                 String result = networkClient.requestFromLocationName(urlRequest);
                 List<Address> addresses = addressBuilder.parseResult(result);
+                Log.i("debugs","GoogleGeocoderDataSource getFromLocationName short QUERY_REQUEST C: "+urlRequest);
+                Log.i("debugs","GoogleGeocoderDataSource getFromLocationName short result: "+result);
 
                 subscriber.onNext(addresses);
                 subscriber.onComplete();

@@ -1,6 +1,7 @@
 package com.artcak.artcaklibrary.locationpicker.geocoder;
 
 import android.location.Address;
+import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -28,6 +29,7 @@ public class GeocoderRepository {
     }
 
     public Observable<List<Address>> getFromLocationName(String query, LatLng lowerLeft, LatLng upperRight) {
+        Log.i("debug","GeocoderRepository getFromLocationName query : "+query);
         return androidGeocoder.getFromLocationName(query, lowerLeft, upperRight)
                 .subscribeOn(Schedulers.newThread())
                 .retry(RETRY_COUNT)

@@ -68,7 +68,7 @@ public class GeocoderPresenter {
     }
 
     public void getFromLocationName(String query) {
-        Log.i("debugs","getFromLocationName 1 query: "+query);
+        Log.i("debugs","GeocoderPresenter getFromLocationName 1 query: "+query);
         view.willLoadLocation();
         Disposable disposable = geocoderRepository.getFromLocationName(query)
                 .observeOn(scheduler)
@@ -78,7 +78,7 @@ public class GeocoderPresenter {
     }
 
     public void getFromLocationName(String query, LatLng lowerLeft, LatLng upperRight) {
-        Log.i("debugs","getFromLocationName 2 query: "+query);
+        Log.i("debugs","GeocoderPresenter getFromLocationName b query: "+query);
         view.willLoadLocation();
         Disposable disposable = Observable.zip(
                 geocoderRepository.getFromLocationName(query, lowerLeft, upperRight),
@@ -92,6 +92,7 @@ public class GeocoderPresenter {
     }
 
     public void getDebouncedFromLocationName(String query, int debounceTime) {
+        Log.i("debugs","GeocoderPresenter getDebouncedFromLocationName query: "+query);
         view.willLoadLocation();
         Disposable disposable = geocoderRepository.getFromLocationName(query)
                 .debounce(debounceTime, TimeUnit.MILLISECONDS, Schedulers.io())
@@ -102,6 +103,8 @@ public class GeocoderPresenter {
     }
 
     public void getDebouncedFromLocationName(String query, LatLng lowerLeft, LatLng upperRight, int debounceTime) {
+        Log.i("debugs","GeocoderPresenter getDebouncedFromLocationName query: "+query);
+
         view.willLoadLocation();
         Disposable disposable = Observable.zip(
                 geocoderRepository.getFromLocationName(query, lowerLeft, upperRight),
@@ -115,6 +118,7 @@ public class GeocoderPresenter {
     }
 
     public void getInfoFromLocation(LatLng latLng) {
+        Log.i("debugs","GeocoderPresenter getDebouncedFromLocationName latLng: "+latLng.toString());
         view.willGetLocationInfo(latLng);
         Disposable disposable = geocoderRepository.getFromLocation(latLng)
                 .observeOn(scheduler)
@@ -129,6 +133,7 @@ public class GeocoderPresenter {
     }
 
     private Observable<List<Address>> getPlacesFromLocationName(String query, LatLng lowerLeft, LatLng upperRight) {
+        Log.i("debugs","GeocoderPresenter getPlacesFromLocationName query: "+query+"| isGooglePlacesEnabled: "+isGooglePlacesEnabled);
         return isGooglePlacesEnabled ? googlePlacesDataSource.getFromLocationName(query, new LatLngBounds(lowerLeft, upperRight))
                 .flatMapIterable(addresses -> addresses).take(MAX_PLACES_RESULTS).toList().toObservable()
                 .onErrorReturnItem(new ArrayList<>()) : Observable.just(new ArrayList<>());
@@ -136,6 +141,7 @@ public class GeocoderPresenter {
 
     @NonNull
     private List<Address> getMergedList(List<Address> geocoderList, List<Address> placesList) {
+        Log.i("debugs","GeocoderPresenter ggetMergedList");
         List<Address> mergedList = new ArrayList<>();
         mergedList.addAll(geocoderList);
         mergedList.addAll(placesList);
