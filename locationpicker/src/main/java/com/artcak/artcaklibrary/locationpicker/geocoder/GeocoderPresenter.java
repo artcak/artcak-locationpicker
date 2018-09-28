@@ -82,7 +82,8 @@ public class GeocoderPresenter {
         view.willLoadLocation();
         Disposable disposable = Observable.zip(
                 geocoderRepository.getFromLocationName(query, lowerLeft, upperRight),
-                getPlacesFromLocationName(query, lowerLeft, upperRight), this::getMergedList)
+                getPlacesFromLocationName(query, lowerLeft, upperRight),
+                this::getMergedList)
                 .subscribeOn(Schedulers.io())
                 .observeOn(scheduler)
                 .retry(RETRY_COUNT)
@@ -143,8 +144,8 @@ public class GeocoderPresenter {
     private List<Address> getMergedList(List<Address> geocoderList, List<Address> placesList) {
         Log.i("debugs","GeocoderPresenter ggetMergedList");
         List<Address> mergedList = new ArrayList<>();
-        mergedList.addAll(geocoderList);
         mergedList.addAll(placesList);
+        mergedList.addAll(geocoderList);
         return mergedList;
     }
 }
